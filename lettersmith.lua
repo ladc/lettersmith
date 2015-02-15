@@ -1,4 +1,12 @@
-local exports = {}
+local exports = setmetatable({}, {
+  -- Transparently require submodules in the lettersmith namespace.
+  -- Exports of the module lettersmith still have priority.
+  -- Convenient for client/build scripts, not intended for modules.
+  __index = function(t,k)
+              local m = require("lettersmith."..k)
+              t[k] = m
+              return m
+            end})
 
 local foldable = require("lettersmith.foldable")
 local map = foldable.map
@@ -107,7 +115,7 @@ end
 -- Given `path_string` -- a path to a directory -- recursively walks through
 -- directory and returns a foldable of all file paths.
 -- Returns a foldable of file path strings.
-function walk_file_paths(path_string)
+local function walk_file_paths(path_string)
   return foldable.from_cps(walk_file_paths_cps, path_string)
 end
 exports.walk_file_paths = walk_file_paths
